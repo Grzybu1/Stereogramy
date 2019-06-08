@@ -3,11 +3,27 @@
 
 
 Stereograms_Frame::Stereograms_Frame(wxWindow* parent) : MyFrame(parent)
-{}
+{
+
+}
 
 void Stereograms_Frame::Random_Dots(wxCommandEvent& event)
 {
-	// TODO: Implement Random_Dots
+	int *tmp = new int[400 * 600];
+	for (int i = 0; i < 400; i++)
+	{
+		for (int j = 0; j < 600; j++)
+		{
+			tmp[j * 400 + i] = i < 300 ? i > 200 ? j > 300 ? j < 400 ? 1 : 0 : 0 : 0 : 0;
+		}
+	}
+	_stereogram.createDots();
+	_stereogram.movePixels(tmp, 10);
+	wxImage dotImage;
+	dotImage.SetData(_stereogram.getDots(), _stereogram.getWidth(), _stereogram.getHeight());
+	wxClientDC dc(m_panel);
+	wxBitmap picture(dotImage);
+	dc.DrawBitmap(picture, 0, 0, false);
 }
 
 void Stereograms_Frame::Load_Bitmap(wxCommandEvent& event)
