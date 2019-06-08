@@ -3,7 +3,6 @@
 Stereogram::Stereogram()
 :_finalWidth(800),_finalHeight(600),_size(_finalHeight*_finalWidth*3)
 {
-	_dots = new unsigned char[_size];
 
 }
 
@@ -12,15 +11,19 @@ Stereogram::~Stereogram()
 
 void Stereogram::createDots()
 {
-	_dots = new unsigned char[_size];
+	/*	
+	*	W runtime'ie usuwa mi ten wskaünik z klasy i chyba dealokuje pamiec wiec jest potrzebne.
+	*	Nie wiem czemu tak sie dzieje. Jakies pomysly?
+	*/
+	_dots = new unsigned char[_size];		
 	int dot = {};							//Zmienna pomocnicza do ktorej losujemy czy czarna kropka czy biala
 	int index = {};							//Zmienna pomocnicza zawierajaca aktualne polozenie w tablicy
-	srand(time(NULL));
+	srand(time(NULL));						//Uzaleznienie losowania od wewnetrznego zegara komputera
 	for (int width = 0; width < _finalWidth / 2; width++)		//Iterujemy do polowy szerokosci wypelniajac jednoczesnie obie polowy
 	{
 		for (int height = 0; height < _finalHeight; height++)	//Iterujemy po calej wysokosci
 		{
-			dot = width == 1 ? 0 : rand() % 2;									//Losujemy 0/1 oznaczajace obecnosc kropki
+			dot = width == 1 ? 0 : rand() % 2;					//Losujemy 0/1 oznaczajace obecnosc kropki
 			index = height * _finalWidth * 3 + width * 3;		//wyliczamy polozenie obecnego pixela
 
 			/*
@@ -36,25 +39,23 @@ void Stereogram::createDots()
 
 void Stereogram::movePixels(int * mask, int step, int helper)
 {
-	int index = {};
-	int ifCpy = {};
+	int index = {};												//Zmienna do przechowywania obecnego indexu
+	int ifCpy = {};												//Zmienna do przechowywania pojedynczego pixela maski
 	for (int width = 0; width < _finalWidth / 2; width++)		//Iterujemy do polowy szerokosci
 	{
 		for (int height = 0; height < _finalHeight; height++)	//Iterujemy po calej wysokosci
 		{
-			ifCpy = mask[height * _finalWidth / 2 + width];			//Sprawdzamy czy piksel nalezy przesunac
-			index = height * _finalWidth * 3 + width * 3;		//wyliczamy polozenie obecnego pixela
-			if (ifCpy)											//Przesuniecie piksela.
+			ifCpy = mask[height * _finalWidth / 2 + width];		//Sprawdzamy czy piksel nalezy przesunac
+			index = height * _finalWidth * 3 + width * 3;		//Wyliczamy polozenie obecnego pixela
+			if (ifCpy)											//Przesuniecie piksela
 			{
 				_dots[index - 3 * step] = _dots[index - 3 * step + 1] = _dots[index - 3 * step + 2] =
 				_dots[index + _finalWidth * 3 / 2];
-				/*_dots[index - 3 * step] = 125;
-				_dots[index - 3 * step + 1] = _dots[index - 3 * step + 2] =
-				_dots[index + _finalWidth * 3 / 2];*/
 			}
 		}
 	}
 
+	/////////////// Rysowanie czerwonych kropek na srodku w celu ulatwienia wlasciwego patrzenia//////////////
 	index = _finalHeight / 2 * _finalWidth * 3 + _finalWidth / 4 * 3;
 	index -= helper * _finalWidth * 3 + helper * 3;
 	for (int i = 0; i < helper; i++)
@@ -69,6 +70,7 @@ void Stereogram::movePixels(int * mask, int step, int helper)
 			_dots[index + j * 3 + _finalWidth * 3 / 2 + i * _finalWidth * 3 + 2] = 0;
 		}
 	}
+
 }
 
 unsigned char * Stereogram::getDots()
