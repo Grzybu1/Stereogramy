@@ -1,5 +1,36 @@
 #include "Stereograms_Frame.h"
 
+void Stereograms_Frame::LoadMask(int threshold = 128)	// Ustawia maske na podstawie zaladowanej bitmapy
+														// Dostosowuje rozmiar bitmapy do wymiarow stereogramu
+														// Threshold: wartosc skali szarosci od ktorej obiekt odstaje (0-255)
+{
+	wxImage img = bitmap->ConvertToImage();
+	if (img.GetWidth() > _stereogram.getWidth() / 2)
+	{
+		int aspect = img.GetWidth() / img.GetHeight();
+		img.Rescale(_stereogram.getWidth() / 2, _stereogram.getWidth() / 2 / aspect);
+	}
+
+	int hGap = _stereogram.getWidth() / 2 - img.GetWidth(),
+		vGap = _stereogram.getHeight() - img.GetHeight();
+
+	for (int i = 0; i < _stereogram.getHeight() * _stereogram.getWidth() / 2; i++)
+		mask[i] = 0;
+
+	for (int i = 0; i < img.GetWidth(); i++)
+		for (int j = 0; j < img.GetHeight(); j++)
+			if (img.GetData()[(j * img.GetWidth() + i) * 3] < threshold)
+				mask[(j + vGap) * _stereogram.getWidth() / 2 + (i + hGap)] = 1;
+}
+
+
+Stereograms_Frame::Stereograms_Frame(wxWindow* parent) : MyFrame(parent)
+{
+	int maskSize = _stereogram.getHeight() * _stereogram.getWidth() / 2;
+	mask = new int[maskSize];
+}
+
+=======
 /*TO DO
 *	Mozna dodac dwa przyciski do interfejsu:
 *	!Jeden taki do odhaczania ptaszkiem czy wyswietlac pomocnicza kropke, 
@@ -14,8 +45,6 @@
 *	! Zaimplementowac dwie palety kolorow do wyboru kolorow kropek i tla (tego co jest biale) - Maria(przyciski) i Wojtek(implementacja)
 */
 
-Stereograms_Frame::Stereograms_Frame(wxWindow* parent) : MyFrame(parent)
-{}
 
 void Stereograms_Frame::Random_Dots(wxCommandEvent& event)
 {
@@ -55,7 +84,10 @@ void Stereograms_Frame::Load_Bitmap(wxCommandEvent& event)
 
 	m_panel->PrepareDC(dcbuffer);
 
-	dcbuffer.DrawBitmap(*bitmap, 0, 0, true);
+	//dcbuffer.DrawBitmap(*bitmap, 0, 0, true);				Po co rysowa� obrazek? : Karol
+
+	LoadMask(250);
+	_stereogram.movePixels(mask);
 }
 
 void Stereograms_Frame::Save_File(wxCommandEvent& event)
