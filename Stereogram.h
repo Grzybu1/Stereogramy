@@ -8,13 +8,15 @@ class Stereogram
 public:
 	Stereogram();
 	~Stereogram();
-	void createDots();
 	void movePixels(int* mask, int step = 2, int helper = 8);
 	unsigned char* getDots();
 	int getWidth();
 	int getHeight();
+	void setWidth(int newWidth);
+	void setHeight(int newHeight);
 
 private:
+	void createDots();
 	int _finalWidth;
 	int _finalHeight;
 	unsigned char* _dots;
