@@ -39,6 +39,7 @@ void Stereogram::createDots()
 
 void Stereogram::movePixels(int * mask, int step, int helper)
 {
+	createDots();
 	int index = {};												//Zmienna do przechowywania obecnego indexu
 	int ifCpy = {};												//Zmienna do przechowywania pojedynczego pixela maski
 	for (int width = 0; width < _finalWidth / 2; width++)		//Iterujemy do polowy szerokosci
@@ -47,7 +48,7 @@ void Stereogram::movePixels(int * mask, int step, int helper)
 		{
 			ifCpy = mask[height * _finalWidth / 2 + width];		//Sprawdzamy czy piksel nalezy przesunac
 			index = height * _finalWidth * 3 + width * 3;		//Wyliczamy polozenie obecnego pixela
-			if (ifCpy)											//Przesuniecie piksela
+			if (ifCpy && index - 3 * step > 0)					//Przesuniecie piksela
 			{
 				_dots[index - 3 * step] = _dots[index - 3 * step + 1] = _dots[index - 3 * step + 2] =
 				_dots[index + _finalWidth * 3 / 2];
@@ -86,4 +87,14 @@ int Stereogram::getWidth()
 int Stereogram::getHeight()
 {
 	return _finalHeight;
+}
+
+void Stereogram::setWidth(int newWidth)
+{
+	_finalWidth = newWidth;
+}
+
+void Stereogram::setHeight(int newHeight)
+{
+	_finalHeight = newHeight;
 }

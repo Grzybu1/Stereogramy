@@ -24,7 +24,7 @@ protected:
 	void Random_Dots(wxCommandEvent& event);		
 	void Load_Bitmap(wxCommandEvent& event);
 	void Save_File(wxCommandEvent& event);
-
+	void Draw();
 	void LoadMask(int threshold);
 
 public:
