@@ -1,86 +1,90 @@
 #include "Stereograms_Frame.h"
 
 //=======
-/*TO DO
-*	Mozna dodac dwa przyciski do interfejsu:
-*	!Jeden taki do odhaczania ptaszkiem czy wyswietlac pomocnicza kropke, 
-*	!a drugi jaka ma miec wielkosc (okno a nie przycisk w sumie) - Maria
-*	!!Do tego mozna dolozyc wybor rozdzielczosci.	- Maria
+/*TO DO TO DO, TO DO, TODO TODO TODO TODO TODOOOOO (rozowa pantera theme)
 *	!!Zmienic Panel na suwakowy i moze dodac obsluge zmiany rozmiaru okienka - Maria i Wojtek
-*	!!!! Z jakiegos powodu zapisywanie nie dziala + ma byc do formatu BMP(zapisywanie do kilku formatow tez spoko jezeli to nie jest duzo pracy i Ci sie chce), trzeba sie pilnie przyjrzec - Maria
-*	! Opcjonalnie mozna zrobic przycisk-haczyk ktory podswietli aktualny ksztalt zeby jeszcze bardziej ulatwic calosc - Maria (Przyciski) i Wojtek (implementacja)
-*	! Zaimplementowac drukowanie - Maria
-*	! Zaimplementowac dwie palety kolorow do wyboru kolorow kropek i tla (tego co jest biale) - Maria(przyciski) i Wojtek(implementacja)
-*	!! Dolozyc suwak zmiany threshold'a - Maria i Karol
 */
 
-void Stereograms_Frame::LoadMask(int threshold = 128)	// Ustawia maske na podstawie zaladowanej bitmapy
-														// Dostosowuje rozmiar bitmapy do wymiarow stereogramu
-														// Threshold: wartosc skali szarosci od ktorej obiekt odstaje (0-255)
-{
-	wxImage img = bitmap->ConvertToImage();
-	if (img.GetWidth() > _stereogram.getWidth() / 2)
-	{
-		int aspect = img.GetWidth() / img.GetHeight();
-		img.Rescale(_stereogram.getWidth() / 2, _stereogram.getWidth() / 2 / aspect);
-	}
-
-	int hGap = _stereogram.getWidth() / 2 - img.GetWidth(),
-		vGap = _stereogram.getHeight() - img.GetHeight();
-
-	for (int i = 0; i < _stereogram.getHeight() * _stereogram.getWidth() / 2; i++)
-		mask[i] = 0;
-
-	for (int i = 0; i < img.GetWidth(); i++)
-		for (int j = 0; j < img.GetHeight(); j++)
-			if (img.GetData()[(j * img.GetWidth() + i) * 3] < threshold)
-				mask[(j + vGap) * _stereogram.getWidth() / 2 + (i + hGap)] = 1;
-}
+wxPageSetupDialogData *PageData;
 
 Stereograms_Frame::Stereograms_Frame(wxWindow* parent) : MyFrame(parent)
 {
-	int maskSize = _stereogram.getHeight() * _stereogram.getWidth() / 2;
-	mask = new int[maskSize];
-
-	for (int i = 0; i < _stereogram.getWidth() / 2; i++)		//Ustawienie prostokata jako domyslny ksztalt
-	{
-		for (int j = 0; j < _stereogram.getHeight(); j++)
-		{
-			mask[j * _stereogram.getWidth() / 2 + i] = 
-				i < _stereogram.getHeight() / 2 ?
-				i > _stereogram.getHeight() / 3 ? 
-				j > _stereogram.getWidth() / 3 ? 
-				j < _stereogram.getWidth() / 2 ? 
-				1 : 0 : 0 : 0 : 0;
-		}
-	}
+	_stereogramCreator.setWidth(_pixelsWidth);
+	_stereogramCreator.setHeight(_pixelsHeight);
+	_backgroundColour = m_background_color->GetColour();
+	_dotColour = m_dots_color->GetColour(); 
+	_mask = new int[_stereogramCreator.getHeight() * _stereogramCreator.getWidth() / 2];
 }
 
-void Stereograms_Frame::Random_Dots(wxCommandEvent& event)
+void Stereograms_Frame::Draw()
 {
-	_stereogram.movePixels(mask, 10);
-	Draw();
+	_stereogramCreator.setWidth(_pixelsWidth);
+	_stereogramCreator.setHeight(_pixelsHeight);
+	wxClientDC dc(m_panel);
+	dc.Clear();
+	if (!flags[0])					//Sprawdzenie potrzeby losowania nowych kropek
+	{
+		_onlyDots = _stereogramCreator.createDots(_backgroundColour, _dotColour);
+	}
+	if (!flags[1])					//Sprawdzenie potrzeby stworzenia maski
+	{
+		delete[] _mask;
+		int _maskSize = _stereogramCreator.getHeight() * _stereogramCreator.getWidth() / 2;
+		_mask = new int[_maskSize];
+
+		if (flags[2])				//Sprawdzenie czy jest zaladowana bitmapa
+		{
+			_loadMask(m_threshold->GetValue(), _bitmap);	//Utworzenie do zmiennej _mask maski na podstawie bitmapy
+			flags[1] = 1;			//Oznaczenie obecnosci maski
+		}
+		else
+		{
+			for (int i = 0; i < _stereogramCreator.getWidth() / 2; i++)		//Ustawienie prostokata jako domyslny ksztalt
+			{
+				for (int j = 0; j < _stereogramCreator.getHeight(); j++)
+				{
+					_mask[j * _stereogramCreator.getWidth() / 2 + i] =
+						i < _stereogramCreator.getHeight() / 2 ?
+						i > _stereogramCreator.getHeight() / 3 ?
+						j > _stereogramCreator.getWidth() / 3 ?
+						j < _stereogramCreator.getWidth() / 2 ?
+						1 : 0 : 0 : 0 : 0;
+				}
+			}
+		}
+	}
+	_movedDots = _stereogramCreator.movePixels(_mask, _onlyDots, flags);		//Stworzenie obrazka
+	_finalImage = _movedDots;
+	if (flags[4])					//Sprawdzenie czy naniesc czerwone kropki
+	{
+		for (int height = 0; height < 9; height++)					//Nanoszenie 2 czerwonych kropek o wymiarach 9x9
+		{
+			for (int width = 0; width < 9; width++)
+			{
+				_finalImage.SetRGB(_pixelsWidth / 4 - 4 + width, _pixelsHeight / 2 - 4 + height, 255, 0, 0);
+				_finalImage.SetRGB(3 * _pixelsWidth / 4 - 4 + width, _pixelsHeight / 2 - 4 + height, 255, 0, 0);
+			}
+		}
+	}
+	dc.DrawBitmap(_finalImage, 0, 0, false);
 }
 
 void Stereograms_Frame::Load_Bitmap(wxCommandEvent& event)
 {
-	wxFileDialog *dialog = new wxFileDialog(this, "Load file", "", "", wxT("Bitmap file (*.bmp)|*.bmp"), wxFD_OPEN | wxFD_FILE_MUST_EXIST);
-
-	if (dialog->ShowModal() == wxID_OK)
+	wxFileDialog *dialog =						//Tworzenie okna dialogowego do wczytywania mapy
+		new wxFileDialog(this, "Load file", "", "", wxT("Bitmap file (*.bmp)|*.bmp"), wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+	if (dialog->ShowModal() == wxID_OK)			//Sprawdzanie czy pomyslnie otwarto okno
 	{
-		bitmap = new wxBitmap(dialog->GetPath(), wxBITMAP_TYPE_ANY);
+		_bitmap = new wxBitmap(dialog->GetPath(), wxBITMAP_TYPE_ANY);	//Pobranie bitmapy do zmiennej
 	}
-	//Po co rysowac obrazek? : Karol
-	//Tez tak sadze. Wstawilem rysowanie gotowego stereogramu : Wojtek
-	LoadMask(250);
-	_stereogram.movePixels(mask);
-	Draw();
+	flags[2] = 1;					//Flaga obecnosci zaladowanej bitmapy
+	Draw();										//Aktualizacja rysunku
 }
 
 void Stereograms_Frame::Save_File(wxCommandEvent& event)
 {
-
-	wxFileDialog save(this, "Save as", "", "", "JPG files (*.jpg)|*.jpg", wxFD_SAVE);
+	m_panel->Refresh();
+	wxFileDialog save(this, "Save as", "", "", "Bitmap image (*.bmp)|*.bmp", wxFD_SAVE);
 	wxClientDC dc(m_panel);
 
 	wxBufferedDC dcB(&dc);
@@ -93,24 +97,111 @@ void Stereograms_Frame::Save_File(wxCommandEvent& event)
 	if (save.ShowModal() == wxID_OK)
 	{
 		wxSize panelSize = m_panel->GetVirtualSize();
+		wxBitmap bitmap_save(panelSize);
 
 		wxMemoryDC memory;
 
-		memory.SelectObject(*bitmap);
+		memory.SelectObject(bitmap_save);
 
 		memory.Blit(0, 0, panelSize.GetX(), panelSize.GetY(), &dcB, 0, 0, wxCOPY, true);
 
-		image = bitmap->ConvertToImage();
-
-		image.SaveFile(save.GetPath(), wxBITMAP_TYPE_JPEG);
+		_finalImage.SaveFile(save.GetPath(), wxBITMAP_TYPE_BMP);
 	}
 }
 
-void Stereograms_Frame::Draw()
+void Stereograms_Frame::Display_resolution(wxCommandEvent& event)
 {
-	wxImage dotImage;
-	dotImage.SetData(_stereogram.getDots(), _stereogram.getWidth(), _stereogram.getHeight());
-	wxClientDC dc(m_panel);				//Przy zmianie panelu tutaj trzeba zmienic
-	wxBitmap picture(dotImage);
-	dc.DrawBitmap(picture, 0, 0, false);
+
+	switch (m_dis_res->GetCurrentSelection())		//Pobranie nowych wymiarow z przycisku
+	{
+	case very_low:
+		_pixelsWidth = 800;
+		_pixelsHeight = 600;
+		break;
+	case low:
+
+		_pixelsWidth = 1920;
+		_pixelsHeight = 1080;
+		break;
+	case medium:
+		_pixelsWidth = 1280;
+		_pixelsHeight = 720;
+		break;
+	case high:
+		_pixelsWidth = 640;
+		_pixelsHeight = 480;
+		break;
+	default:
+		_pixelsWidth = 800;
+		_pixelsHeight = 600;
+	}
+
+	flags[0] = flags[1] = 0;					//Oznaczenie potrzeby wygenerowania nowych kropek i maski
+	Draw();										//Aktualizacja rysunku
 }
+
+void Stereograms_Frame::Random_Dots(wxCommandEvent& event)
+{
+	flags[0] = 0;	//Oznaczenie flagi posiadania wylosowanych kropek - wymuszenie nowego losowania
+	Draw();			//Aktualizacja rysunku
+}
+
+void Stereograms_Frame::Helpful_dot(wxCommandEvent& event)
+{
+	flags[4] = m_helpful_dot->IsChecked();		//Oznaczenie potrzeby dorysowania kropki
+	Draw();										//Aktualizacja rysunku
+}
+
+void Stereograms_Frame::Make_brighter(wxCommandEvent& event)
+{
+	flags[3] = m_brighter->IsChecked();			//Oznaczenie potrzeby podswietlenia przesuniecia
+	Draw();										//Aktualizacja rysunku
+}
+
+void Stereograms_Frame::OnScrollBar(wxScrollEvent& event)
+{
+	flags[1] = 0;								//Oznaczenie potrzeby stworzenia nowej maski
+	Draw();										//Aktualizacja rysunku
+}
+
+void Stereograms_Frame::Background_color(wxColourPickerEvent& event)
+{
+	_backgroundColour = m_background_color->GetColour();		//Zapisanie koloru z palety
+	flags[0] = 0;												//Oznaczenie potrzeby losowania nowych kropek
+	Draw();														//Aktualizacja rysunku
+}
+
+void Stereograms_Frame::Dots_color(wxColourPickerEvent& event)
+{
+	_dotColour = m_dots_color->GetColour();						//Zapisanie koloru z palety
+	flags[0] = 0;												//Oznaczenie potrzeby losowania nowych kropek
+	Draw();														//Aktualizacja rysunku
+}
+
+void Stereograms_Frame::_loadMask(int threshold, wxBitmap* _bitmap)	// Ustawia maske na podstawie zaladowanej bitmapy
+														// Dostosowuje rozmiar bitmapy do wymiarow stereogramu
+														// Threshold: wartosc skali szarosci od ktorej obiekt odstaje (0-255)
+{
+	wxImage img = _bitmap->ConvertToImage();
+	if (img.GetWidth() > _stereogramCreator.getWidth() / 2)
+	{
+		double aspect = (double)img.GetWidth() / (double)img.GetHeight();
+		img.Rescale(_stereogramCreator.getWidth() / 2, _stereogramCreator.getWidth() / 2 / aspect);
+	}
+
+	int hGap = _stereogramCreator.getWidth() / 4 - 0.5 * img.GetWidth(),
+		vGap = _stereogramCreator.getHeight() / 2 - 0.5 * img.GetHeight();
+
+	for (int i = 0; i < _stereogramCreator.getHeight() * _stereogramCreator.getWidth() / 2; i++)
+		_mask[i] = 0;
+
+	for (int i = 0; i < img.GetWidth(); i++)
+		for (int j = 0; j < img.GetHeight(); j++)
+			if (img.GetData()[(j * img.GetWidth() + i) * 3] > threshold)
+				_mask[(j + vGap) * _stereogramCreator.getWidth() / 2 + (i + hGap)] = 1;
+
+
+}
+
+
+

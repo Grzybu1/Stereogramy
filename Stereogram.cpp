@@ -1,21 +1,16 @@
 #include "Stereogram.h"
 
 Stereogram::Stereogram()
-:_finalWidth(800),_finalHeight(600),_size(_finalHeight*_finalWidth*3)
-{
-
-}
+:_finalWidth(800),_finalHeight(600),_size(600*800*3)
+{}
 
 Stereogram::~Stereogram()
 {}
 
-void Stereogram::createDots()
+wxImage Stereogram::createDots(wxColour bacgroundColour, wxColour dotsColour)
 {
-	/*	
-	*	W runtime'ie usuwa mi ten wskaünik z klasy i chyba dealokuje pamiec wiec jest potrzebne.
-	*	Nie wiem czemu tak sie dzieje. Jakies pomysly?
-	*/
-	_dots = new unsigned char[_size];		
+	_size = _finalHeight * _finalWidth * 3;						//Aktualizacja _size
+	unsigned char* dots = new unsigned char[_size];				//Alokacja pamieci
 	int dot = {};							//Zmienna pomocnicza do ktorej losujemy czy czarna kropka czy biala
 	int index = {};							//Zmienna pomocnicza zawierajaca aktualne polozenie w tablicy
 	srand(time(NULL));						//Uzaleznienie losowania od wewnetrznego zegara komputera
@@ -27,19 +22,26 @@ void Stereogram::createDots()
 			index = height * _finalWidth * 3 + width * 3;		//wyliczamy polozenie obecnego pixela
 
 			/*
-			*Przypisujemy do wartosci RGB pixela 0 lub 255 aby uzyskac calkowita czern lub biel;
+			*Przypisujemy do wartosci RGB pixela wartosci podane na paletach;
 			*Jednoczesnie robimy dokladnie to samo z pixelem na drugiej polowie aby otrzymac kopie
 			*/
-			_dots[index] = _dots[index + 1] = _dots[index + 2] =
-			_dots[index + _finalWidth * 3 / 2] = _dots[index + 1 + _finalWidth * 3 / 2] = _dots[index + 2 + _finalWidth * 3 / 2] =
-			dot == 1 ? 0 : 255;
+			dots[index] = dots[index + _finalWidth * 3 / 2] = 
+				dot == 1 ? dotsColour.Red() : bacgroundColour.Red();
+
+			dots[index + 1] = dots[index + 1 + _finalWidth * 3 / 2] = 
+				dot == 1 ? dotsColour.Green() : bacgroundColour.Green();
+
+			dots[index + 2] = dots[index + 2 + _finalWidth * 3 / 2] = 
+				dot == 1 ? dotsColour.Blue() : bacgroundColour.Blue();
 		}
 	}
+	wxImage tmp;
+	tmp.SetData(dots, _finalWidth, _finalHeight, false);
+	return tmp;
 }
 
-void Stereogram::movePixels(int * mask, int step, int helper)
+wxImage Stereogram::movePixels(int * mask, wxImage rawDots, bool* flags)
 {
-	createDots();
 	int index = {};												//Zmienna do przechowywania obecnego indexu
 	int ifCpy = {};												//Zmienna do przechowywania pojedynczego pixela maski
 	for (int width = 0; width < _finalWidth / 2; width++)		//Iterujemy do polowy szerokosci
@@ -47,36 +49,18 @@ void Stereogram::movePixels(int * mask, int step, int helper)
 		for (int height = 0; height < _finalHeight; height++)	//Iterujemy po calej wysokosci
 		{
 			ifCpy = mask[height * _finalWidth / 2 + width];		//Sprawdzamy czy piksel nalezy przesunac
-			index = height * _finalWidth * 3 + width * 3;		//Wyliczamy polozenie obecnego pixela
-			if (ifCpy && index - 3 * step > 0)					//Przesuniecie piksela
+			if (ifCpy && width - 10 > 0)						//Przesuniecie piksela
 			{
-				_dots[index - 3 * step] = _dots[index - 3 * step + 1] = _dots[index - 3 * step + 2] =
-				_dots[index + _finalWidth * 3 / 2];
+				rawDots.SetRGB(width - 10, height,						//ustawienie rgb na pixelu o wspolrzednych 10 pixeli w lewo
+					rawDots.GetRed(width + _finalWidth / 2, height),	//r na to samo co odpowiadajacy pixel
+					rawDots.GetGreen(width + _finalWidth / 2, height),	//g na to samo co odpowiadajacy pixel
+					flags[3] == 1 ?										//sprawdzamy czy flaga podswietlenia w gorze
+					(rawDots.GetBlue(width + _finalWidth / 2, height) + 128) % 255 :	//jesli tak to zmieniamy b o 128
+					rawDots.GetBlue(width + _finalWidth / 2, height));					//jesli nie to b traktujemy jak r i g
 			}
 		}
 	}
-
-	/////////////// Rysowanie czerwonych kropek na srodku w celu ulatwienia wlasciwego patrzenia//////////////
-	index = _finalHeight / 2 * _finalWidth * 3 + _finalWidth / 4 * 3;
-	index -= helper * _finalWidth * 3 + helper * 3;
-	for (int i = 0; i < helper; i++)
-	{
-		for (int j = 0; j < helper; j++)
-		{
-			_dots[index + j * 3 + i * _finalWidth * 3] = 255;
-			_dots[index + j * 3 + _finalWidth * 3/ 2 + i * _finalWidth * 3] = 255;
-			_dots[index + j * 3 + i * _finalWidth * 3 + 1] = 0;
-			_dots[index + j * 3 + _finalWidth * 3 / 2 + i * _finalWidth * 3 + 1] = 0;
-			_dots[index + j * 3 + i * _finalWidth * 3 + 2] = 0;
-			_dots[index + j * 3 + _finalWidth * 3 / 2 + i * _finalWidth * 3 + 2] = 0;
-		}
-	}
-
-}
-
-unsigned char * Stereogram::getDots()
-{
-	return _dots;
+	return rawDots;
 }
 
 int Stereogram::getWidth()
