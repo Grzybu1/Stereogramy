@@ -47,6 +47,7 @@ protected:
 	wxButton* m_saveButton;
 
 	// Virtual event handlers, overide them in your derived class
+	virtual void resize(wxSizeEvent& event) { event.Skip(); }
 	virtual void Load_Bitmap(wxCommandEvent& event) { event.Skip(); }
 	virtual void Random_Dots(wxCommandEvent& event) { event.Skip(); }
 	virtual void Helpful_dot(wxCommandEvent& event) { event.Skip(); }

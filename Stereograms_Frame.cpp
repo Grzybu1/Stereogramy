@@ -14,6 +14,12 @@ Stereograms_Frame::Stereograms_Frame(wxWindow* parent) : MyFrame(parent)
 	_backgroundColour = m_background_color->GetColour();
 	_dotColour = m_dots_color->GetColour(); 
 	_mask = new int[_stereogramCreator.getHeight() * _stereogramCreator.getWidth() / 2];
+
+}
+
+Stereograms_Frame::~Stereograms_Frame()
+{
+	delete[] _mask;
 }
 
 void Stereograms_Frame::Draw()
@@ -107,6 +113,8 @@ void Stereograms_Frame::Save_File(wxCommandEvent& event)
 
 		_finalImage.SaveFile(save.GetPath(), wxBITMAP_TYPE_BMP);
 	}
+
+	Draw();
 }
 
 void Stereograms_Frame::Display_resolution(wxCommandEvent& event)
@@ -178,6 +186,12 @@ void Stereograms_Frame::Dots_color(wxColourPickerEvent& event)
 	Draw();														//Aktualizacja rysunku
 }
 
+
+void Stereograms_Frame::resize(wxSizeEvent& event)
+{
+	Draw();
+}
+
 void Stereograms_Frame::_loadMask(int threshold, wxBitmap* _bitmap)	// Ustawia maske na podstawie zaladowanej bitmapy
 														// Dostosowuje rozmiar bitmapy do wymiarow stereogramu
 														// Threshold: wartosc skali szarosci od ktorej obiekt odstaje (0-255)
@@ -202,6 +216,7 @@ void Stereograms_Frame::_loadMask(int threshold, wxBitmap* _bitmap)	// Ustawia m
 
 
 }
+
 
 
 

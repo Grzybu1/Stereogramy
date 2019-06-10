@@ -82,6 +82,7 @@ MyFrame::MyFrame(wxWindow* parent, wxWindowID id, const wxString& title, const w
 	this->Centre(wxBOTH);
 
 	// Connect Events
+	m_panel->Connect(wxEVT_SIZE, wxSizeEventHandler(MyFrame::resize), NULL, this);
 	m_load_bitmap->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(MyFrame::Load_Bitmap), NULL, this);
 	m_random_dots->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(MyFrame::Random_Dots), NULL, this);
 	m_helpful_dot->Connect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(MyFrame::Helpful_dot), NULL, this);
@@ -104,6 +105,7 @@ MyFrame::MyFrame(wxWindow* parent, wxWindowID id, const wxString& title, const w
 MyFrame::~MyFrame()
 {
 	// Disconnect Events
+	m_panel->Disconnect(wxEVT_SIZE, wxSizeEventHandler(MyFrame::resize), NULL, this);
 	m_load_bitmap->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(MyFrame::Load_Bitmap), NULL, this);
 	m_random_dots->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(MyFrame::Random_Dots), NULL, this);
 	m_helpful_dot->Disconnect(wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler(MyFrame::Helpful_dot), NULL, this);

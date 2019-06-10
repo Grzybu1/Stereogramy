@@ -19,6 +19,7 @@ protected:
 	void Random_Dots(wxCommandEvent& event);		
 	void Load_Bitmap(wxCommandEvent& event);
 	void Save_File(wxCommandEvent& event);
+	void resize(wxSizeEvent& event);
 	void Make_brighter(wxCommandEvent& event);
 	void Display_resolution(wxCommandEvent& event);
 	void OnScrollBar(wxScrollEvent& event);
@@ -33,6 +34,7 @@ protected:
 public:
 
 	Stereograms_Frame(wxWindow* parent);
+	~Stereograms_Frame();
 
 private:
 	////////Zmienne////////
