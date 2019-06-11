@@ -61,7 +61,7 @@ protected:
 
 public:
 
-	MyFrame(wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("Stereogram_generatorinator Korzybski_Kocierz_Korkuc"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize(666, 460), long style = wxDEFAULT_FRAME_STYLE | wxTAB_TRAVERSAL);
+	MyFrame(wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("Stereogram_generatorinator Korkuc_Kocierz_Korzybski"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize(666, 460), long style = wxDEFAULT_FRAME_STYLE | wxTAB_TRAVERSAL);
 
 	~MyFrame();
 
