@@ -47,7 +47,7 @@ MyFrame::MyFrame(wxWindow* parent, wxWindowID id, const wxString& title, const w
 	m_helpful_dot = new wxCheckBox(this, wxID_ANY, wxT("Helpful dot"), wxDefaultPosition, wxDefaultSize, 0);
 	options->Add(m_helpful_dot, 0, wxALIGN_CENTER_HORIZONTAL, 5);
 
-	m_brighter = new wxCheckBox(this, wxID_ANY, wxT("Brighter"), wxDefaultPosition, wxDefaultSize, 0);
+	m_brighter = new wxCheckBox(this, wxID_ANY, wxT("Highlight"), wxDefaultPosition, wxDefaultSize, 0);
 	options->Add(m_brighter, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, 5);
 
 	wxString m_dis_resChoices[] = { wxT("800x600"), wxT("1920x1080"), wxT("1280x720"), wxT("640x480") };
