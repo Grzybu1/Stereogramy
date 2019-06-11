@@ -78,6 +78,8 @@ void Stereograms_Frame::Load_Bitmap(wxCommandEvent& event)
 	{
 		_bitmap = new wxBitmap(dialog->GetPath(), wxBITMAP_TYPE_ANY);	//Pobranie bitmapy do zmiennej
 	}
+	else
+	{ }
 	flags[2] = 1;					//Flaga obecnosci zaladowanej bitmapy
 	flags[1] = 0;					//Oznaczenie potrzeby wykonania nowej maski
 	Draw();							//Aktualizacja rysunku
