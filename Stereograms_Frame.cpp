@@ -1,5 +1,4 @@
 #include "Stereograms_Frame.h"
-
 wxPageSetupDialogData *PageData;
 
 Stereograms_Frame::Stereograms_Frame(wxWindow* parent) : MyFrame(parent)
@@ -77,10 +76,10 @@ void Stereograms_Frame::Load_Bitmap(wxCommandEvent& event)
 	if (dialog->ShowModal() == wxID_OK)			//Sprawdzanie czy pomyslnie otwarto okno
 	{
 		_bitmap = new wxBitmap(dialog->GetPath(), wxBITMAP_TYPE_ANY);	//Pobranie bitmapy do zmiennej
+		flags[2] = 1;					//Flaga obecnosci zaladowanej bitmapy
 	}
 	else
 	{ }
-	flags[2] = 1;					//Flaga obecnosci zaladowanej bitmapy
 	flags[1] = 0;					//Oznaczenie potrzeby wykonania nowej maski
 	Draw();							//Aktualizacja rysunku
 }
@@ -109,6 +108,8 @@ void Stereograms_Frame::Save_File(wxCommandEvent& event)
 
 		_finalImage.SaveFile(save.GetPath(), wxBITMAP_TYPE_BMP);
 	}
+	else
+	{ }
 	Draw();
 }
 
