@@ -195,6 +195,12 @@ void Stereograms_Frame::_loadMask(int threshold, wxBitmap* _bitmap)	// Ustawia m
 		img.Rescale(_stereogramCreator.getWidth() / 2, _stereogramCreator.getWidth() / 2 / aspect);
 	}
 
+	if (img.GetHeight() > _stereogramCreator.getHeight())
+	{
+		double aspect = (double)img.GetWidth() / (double)img.GetHeight();
+		img.Rescale(_stereogramCreator.getHeight() * aspect, _stereogramCreator.getHeight());
+	}
+
 	int hGap = _stereogramCreator.getWidth() / 4 - 0.5 * img.GetWidth(),
 		vGap = _stereogramCreator.getHeight() / 2 - 0.5 * img.GetHeight();
 
